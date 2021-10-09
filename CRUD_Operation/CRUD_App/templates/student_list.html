@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" integrity="undefined" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css">
+
+    <title>Student List</title>
+
+    <style>
+        .login{
+            border: 2px solid darkorange;
+            border-radius: 8px;
+            box-shadow: 0px 0px 0px 0px #000;
+            padding: 0px 15px 20px 15px;
+            margin: 50px 150px 50px 180px;
+            width: 900px;
+            height:auto;
+            border:3px ridge;
+            position:relative;
+            background: #E6E6FA;
+         }
+    </style>
+
+  </head>
+
+<body>
+
+    <div class="form-container">
+
+        <form method="POST" class="login" id="id_form">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-sm-7" align="right">
+                    <h1 style="font-size:20px;font-family:serif;font-size:40px; color:rgb(14, 11, 11);margin-top: 15px;">Student List</h1>
+                </div>
+            </div>
+
+            <div class="row" style="margin-top:30px">
+                <div class="col-sm-1" style="padding:1px;">
+                    <select name="page_list_count" id="list_c_id" class="form-control" onchange="change_list(this.value)">
+                        <option value="5">5</option>
+                        <option value="10">10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                    </select>
+                </div>
+                <div class="col-sm-4"></div>
+                <div class="col-sm-6">
+                    <div class="input-group">
+                <input type="text" class="form-control" placeholder="Search..." id="search_text" value="{{search}}">
+                <div class="input-group-append">
+                  <button class="btn btn-secondary" type="button" onclick="search_btn()">
+                    <i class="fa fa-search"></i>
+                  </button>
+                </div>
+              </div>
+                </div>
+            </div>
+            <script>
+                function search_btn(){
+                    location.href=`{% url 'student_list' %}`+`?search=`+$("#search_text").val()
+                }
+                function change_list(data){
+                    location.href=`{% url 'student_list' %}`+`?page_list_count=`+$("#list_c_id").val()
+                }
+                function page_no(data){
+                    location.href=`{% url 'student_list' %}`+`?page=`+data+`&page_list_count=`+$("#list_c_id").val()
+                }
+                var list ="{{plc}}"
+                $("#list_c_id").val(list)
+            </script>
+            <br>
+            <div id="id_table_1" style="overflow-x:auto;">
+                <table class="table table-bordered" style="border: 2px;">
+                    <thead>
+                    <tr>
+                        <th align="center" scope="col">Student No.</th>
+                        <th align="center" scope="col"> Name</th>
+                        <th align="center" scope="col">DOB</th>
+                        <th align="center" scope="col">DOJ</th>
+                        <th align="center" scope="col">Edit</th>
+                        <th align="center" scope="col">Delete</th>
+                    </tr>
+                    </thead>
+                    <tbody class="myTable" id="id_table">
+                        {% for b in Student %}
+                            <tr>
+                                <td align="center" scope="col">{{b.student_no}}</td>
+                                <td align="center" scope="col">{{b.student_name}}</td>
+                                <td align="center" scope="col">{{b.student_dob | date:'d/m/Y'}}</td>
+                                <td align="center" scope="col">{{b.student_doj | date:'d/m/Y'}}</td>
+                                <td align="center" scope="col">
+                                    <a href="/student_update/{{b.id}}"><input id="edit-{{b.id}}" type="button" class="btn btn-primary" value="Edit" style="width: 80px;"></a>
+                                      <!-- <input style="display:none" id="save-{{b.id}}" type="button" class="btn-btn" value="Save" onclick="save_rec-(`{{b.id}}`)" > -->
+                                </td>
+                                <td align="center" scope="col">
+                                    <input id="delete-{{b.id}}" type="button" class="btn btn-danger" value="Delete" onclick="delete_rec(`{{b.id}}`)" >
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                      <tr>
+                        <th align="center" scope="col">Student No.</th>
+                        <th align="center" scope="col"> Name</th>
+                        <th align="center" scope="col">DOB</th>
+                        <th align="center" scope="col">DOJ</th>
+                        <th align="center" scope="col">Edit</th>
+                        <th align="center" scope="col">Delete</th>
+                      </tr>
+                    </tfoot>
+                </table>
+            </div>
+    
+            {% if Student.has_other_pages %}
+            <nav aria-label="Page navigation example">
+              <ul class="pagination">
+                {% if Student.has_previous %}
+                    <li class="page-item"><a class="page-link" onclick="page_no(`{{Student.previous_page_number}}`)">Previous</a></li>
+                {% else %}
+                    <li class="page-item disabled"><a class="page-link" href="#">Previous</a></li>
+                {% endif %}
+                  {% for i in  Student.paginator.page_range %}
+                    {% if Student.number == i %}
+                        <li class="page-item active">
+                            <a class="page-link" onclick="page_no(`{{i}}`)">{{i}}
+                              <span class="sr-only">(current)</span>
+                          </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item"><a class="page-link"  onclick="page_no(`{{i}}`)">{{i}}</a></li>
+                    {% endif %}
+                 {% endfor %}
+    
+                {% if Student.has_next %}
+                    <li class="page-item"><a class="page-link" onclick="page_no(`{{Student.next_page_number}}`)">Next</a></li>
+                {% else %}
+                    <li class="page-item disabled"><a class="page-link" href="#">Next</a></li>
+                {% endif %}
+              </ul>
+            </nav>
+        {% endif%}
+    
+
+        </form>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
+</body>
+</html>
+
+<script>
+    function Capitalize1(str,force){
+    str=force ? str.toLowerCase() : str;  
+    return str.replace(/(\b)([a-zA-Z])/g,
+            function(firstLetter){
+                return  firstLetter.toUpperCase();
+            });
+}
+</script>
+
+<script>
+    $('#id_student_name').keyup(function(){
+     $(this).val(Capitalize1($(this).val(),true));   
+     });   
+ </script>
+
+<script>
+    $("#stud_no_error").hide();
+    $("#id_student_no").on("keypress", function(event) {
+        if ((event.which < 48 || event.which > 57 || event.which == 9)) {
+            event.preventDefault();
+            $("#stud_no_error").show();
+        }
+        if (!(event.which < 48 || event.which > 57 || event.which == 9)) {
+            $("#stud_no_error").hide();
+        }
+        $('#id_student_no').focusout(function() {
+            $("#stud_no_error").hide();
+        });
+    });
+</script>
+
+<script type="text/javascript">
+   $(function() {
+  $(document).ready(function () {
+   var todaysDate = new Date(); // Gets today's date
+    var year = todaysDate.getFullYear();                        // YYYY
+    var month = ("0" + (todaysDate.getMonth() + 1)).slice(-2);  // MM
+    var day = ("0" + todaysDate.getDate()).slice(-2);           // DD
+    var maxDate = (year +"-"+ month +"-"+ day); // Results in "YYYY-MM-DD" for today's date 
+    $('#id_student_dob').attr('max',maxDate);
+    $('#id_student_doj').attr('max',maxDate);
+  });
+});
+</script>
+
+<!-- <script>
+    $('#id_student_doj').focusout(function() {
+        var dob = $('#id_student_dob').val()
+        var doj = $('#id_student_doj').val()
+        if(doj <= dob){
+            alert("Enter Valid Date")
+        }
+
+    });
+</script> -->
+
+<script>
+    function delete_rec(id)
+    {
+    swal({
+              title: "Are you sure?",
+              text: "Once deleted, you will not be able to recover this Student Details!",
+              icon: "warning",
+              buttons: true,
+              dangerMode: true,
+        })
+        .then((willDelete) => {
+            if (willDelete) {
+                $.ajax(
+                {
+                        url: '/student_delete_api/'+id,
+                        data: {},
+                        type: 'DELETE',
+                        dataType: 'json',
+                        success: function(data)
+                        {
+                        console.log("delete")
+                        swal('Done','Data Deleted Successfully..','success')
+                        //refresh();
+                        location.reload();
+                        },
+                        error: function(data)
+                        {
+                        },
+                });
+            }else {
+                swal("Your Details not deleted!");
+            }
+     });
+}
+</script>
