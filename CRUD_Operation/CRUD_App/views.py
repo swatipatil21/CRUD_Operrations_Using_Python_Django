@@ -47,14 +47,14 @@ def student_list_view(request):
 
         if search:
             context['search'] = search
+            
             print(search)
-            dt = datetime.strptime(search, '%d/%m/%Y').date()
-            print(dt)
-            print(dt)
-            print(dt)
-            print(dt)
-            # stud = stud.filter(Q(student_name__icontains=search) | Q(student_no__icontains=search) | Q(student_dob__icontains=search))
-            stud = stud.filter(Q(student_name__icontains=search) | Q(student_no__icontains=search) | Q(student_dob__icontains=dt))
+            if '/' in search:
+                dt = datetime.strptime(search, '%d/%m/%Y').date()
+                dt1 = datetime.strptime(search, '%d/%m/%Y').date()
+                stud = stud.filter(Q(student_name__icontains=search) | Q(student_no__icontains=search) | Q(student_dob__icontains=dt) | Q(student_doj__icontains=dt1))
+            else:
+                stud = stud.filter(Q(student_name__icontains=search) | Q(student_no__icontains=search))
             print(stud)
         if plc:
             context['plc'] = plc
